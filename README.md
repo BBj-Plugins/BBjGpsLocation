@@ -3,8 +3,12 @@ A Plugin that can display given GPS-Positions in a separate window.
 
 
 The location can be relocated and will be returned by the App.
+
+
 **Caution**
-- Will not work with out an Goodle Maps Apikey. 
+
+
+The BBjGpsLocation won't work with out an Goodle Maps Apikey.
 
 
 
