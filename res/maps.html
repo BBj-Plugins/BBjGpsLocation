@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+ #map {
+     height: 100%;
+          }
+       /* Optional: Makes the sample page fill the window. */
+   html, body {
+          height: 100%;
+          margin: 0;
+          padding: 0;
+     }
+</style>
+</head>
+<body>
+
+
+<div id="map" style = #map></div>
+<script src="[[path]]"></script>
+<script>
+    var lat = "[[centerLatString]]";
+    var long = "[[centerLongString]]";
+   
+    var markerlat = "[[latitudeString]]";
+    var markerlong = "[[longitudeString]]";
+
+   
+   function makeMap() {
+       var marker;
+       var map;
+       var mapOptions;
+       var mapCanvas;
+       if ((typeof(lat)!='undefined' && typeof(long)!='undefined' )&&( lat!=null && long!=null)){
+           var center = new google.maps.LatLng(lat,long); 
+           mapCanvas = document.getElementById("map");
+           mapOptions = {center: center, zoom: 19,draggableCursor:'crosshair', mapTypeId: google.maps.MapTypeId.HYBRID,streetViewControl: false,rotateControl: false,fullscreenControl: false,tilt: 0};
+           map = new google.maps.Map(mapCanvas,mapOptions);
+          
+          
+           if (( typeof(markerlat)  !== 'undefined' && typeof(markerlong)  !== 'undefined')&&(markerlat!=null && markerlong!=null)){ 
+               var markerposition = new google.maps.LatLng(markerlat,markerlong);
+               marker = new google.maps.Marker({position: markerposition});
+               marker.setMap(map);
+               }
+           }else if ((typeof(markerlat)!='undefined' && typeof(markerlong)!='undefined' )&&( markerlat!=null && markerlong!=null)){
+           lat = markerlat;
+           long = markerlong;
+           var center = new google.maps.LatLng(lat,long); 
+           mapCanvas = document.getElementById("map");
+           mapOptions = {center: center, zoom: 19,mapTypeId: google.maps.MapTypeId.HYBRID,streetViewControl: false,rotateControl: false,fullscreenControl: false,tilt: 0};
+           map = new google.maps.Map(mapCanvas,mapOptions);
+           if ((typeof(markerlat)  !== 'undefined' && typeof(markerlong)  !== 'undefined')&&(markerlat!=null && markerlong!=null)){ 
+           var markerposition = new google.maps.LatLng(markerlat,markerlong);
+               marker = new google.maps.Marker({position: markerposition});
+               marker.setMap(map);
+              }
+           }else{
+           alert("Could not find any Geodata to load a map with!");
+       }
+     
+     if ( typeof(marker)  !== 'undefined') {
+             google.maps.event.addListener(marker,'click',function() {
+               var carInfo = new google.maps.InfoWindow({
+                   content: "[[message]]"
+               });
+               carInfo.open(map,marker);
+             });
+     }
+
+     
+     google.maps.event.addListener(map, 'click', function(event) {
+         var confirmation = confirm("Update location?");
+         if (confirmation == true){
+            Push.create("Position updated");
+           if ( typeof(marker)  !== 'undefined'){
+               marker.setMap(null);
+               }
+               marker = new google.maps.Marker({position: event.latLng});
+               marker.setMap(map);
+               window.basisDispatchCustomEvent("geodata",{"lat":marker.getPosition().lat(),"long":marker.getPosition().lng()});
+               var carInfo = new google.maps.InfoWindow({
+                    content:"New Position"
+                   });
+               carInfo.open(map,marker);
+            }else{
+               return;
+           }
+     });
+   }
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?[[apikey]]callback=makeMap"></script>
+</body>
+</html>

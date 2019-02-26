@@ -1,0 +1,7 @@
+{
+    "name": "BBjGPSLocation",
+    "description": "A Plugin containing a Module for locating Positions on the GPS",
+    "version": "1.0",
+    "author": "Basis",
+    "bbj_dependency": "18.20"
+}

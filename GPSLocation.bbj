@@ -1,0 +1,476 @@
+use ::DialogWizard/BBDialog.bbj::BBDialog
+use ::DialogWizard/DialogUtils.bbj::DialogUtils
+use ::DialogWizard/DialogWizardRun.bbj::DialogWizardRun
+use ::bbwindowutils.bbj::BBWindowUtils
+use com.basiscomponents.db.constants.SimpleConstantsResolver
+use java.util.HashMap
+
+
+class public GPSLocation extends BBDialog
+
+    field protected BBjAPI        API! = BBjAPI()
+    field protected BBjNumber     TRUE = #API!.TRUE
+    field protected BBjNumber     FALSE = #API!.FALSE
+    field protected BBjSysGui     SysGui! = #API!.openSysGui("X0")
+    field protected BBjThinClient ThinClient! = #API!.getThinClient()
+    field protected BBjString     ClientLocale$ = #ThinClient!.getClientLocale()
+    field protected BBjString     PgmDirectory$ = pgm(-2)(1,max(pos("\"=pgm(-2),-1),pos("/"=pgm(-2),-1)))
+    
+    
+    field protected BBjNamespace  GroupNS! = #API!.getGroupNamespace()
+    field protected BBjMDI        MDI!
+
+    field public BBjString traceDir$
+    field public BBjString traceMode$
+    field public BBjNumber traceChan
+    field public BBjString traceFile$
+    field public BBjString GoogleApiKey$
+    field public String message!
+    
+    field private Double Latitude!
+    field private Double Longitude!
+    field private Double movedLat!
+    field private Double movedLong!
+    field private Double centerLat!
+    field private Double centerLong!
+    field private BBjString Label$
+    field private BBjNumber ready=0
+    
+    field private String windowTitle!
+    field private BBjImage windowIcon!
+    field private String windowIconPath!
+    field private static String standartTitle! = "GPS-CarLocator"
+    field private BBjString url$
+    field private BBjString pushUrl$
+
+	rem /** DLGWIZ_RES GPSLocation.arc 101 **/
+
+	rem /** DLGWIZ_FLD_BEGIN **/
+	rem /** DLGWIZ_FLD_END **/
+
+
+	rem /** DLGWIZ_FLC_BEGIN **/
+	field protected BBjTopLevelWindow C_Window101!
+	field protected BBjButton C_BTNOK!
+	field protected BBjButton C_BTNCANCEL!
+	rem /** DLGWIZ_FLC_END **/
+
+	field protected BBjHtmlView C_Window101__HtmlView100! 
+
+    field public BBjTopLevelWindow Wnd!
+
+    rem /**
+    rem * Constructor GPSLocation
+    rem */
+    method public GPSLocation()
+        #super!("BBjGpsLocation/src/GPSLocation.arc",101)
+        
+        #Latitude!   = null()
+        #movedLat!   = null()
+        #Longitude!  = null()
+        #movedLong!  = null()
+        #centerLat!  = null()
+        #centerLong! = null()
+        #message! = ""
+        
+        
+        rem Check if BBjSysGui object is still valid. If not re-create it.
+        #SysGui!.getContext(err=*next); sg_ok=1
+        if !sg_ok then
+            #SysGui!=#API!.openSysGui("X0")
+        endif
+
+        if stbl("+USER_LOCALE",err=*endif)<>"" then
+            #ClientLocale$ = stbl("+USER_LOCALE")
+        endif
+
+        #Wnd!=#super!.getWndTop()
+        if #API!.isInMDI() then #MDI!=#API!.getMDI()
+
+
+        if #Wnd!<>null() then
+            #initToolBar()
+            #setCallbacks()
+        endif
+    methodend
+    
+    rem /**
+    rem * Method initToolBar:
+    rem * Setup toolbar
+    rem */
+    method protected void initToolBar()
+        
+    methodend
+    
+    
+    method public void setMessage(String message!)
+        #message! = message!
+    methodend
+    
+
+    rem /**
+    rem * Method setCallbacks:
+    rem * Set control callbacks
+    rem */
+    method protected void setCallbacks()
+        if #API!.isInMDI() then #MDI!.registerMDIClosingCallback(#this!,"onMDIClosing")
+        #GroupNS!.setCallbackForVariableChange("debug_mode",#this!,"doDebugTrace")
+        #GroupNS!.setCallbackForVariableChange("trace_mode",#this!,"doDebugTrace")
+		rem /** DLGWIZ_CBS_BEGIN **/
+		#super!.getControlByName("Window101").setCallback(BBjAPI.ON_CLOSE,#this!,"Window101__ON_CLOSE")
+		#super!.getControlByName("Window101").setCallback(BBjAPI.ON_RESIZE,#this!,"Window101__ON_RESIZE")
+		#super!.getControlByName("BTNOK").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTNOK__ON_BUTTON_PUSH")
+		#super!.getControlByName("BTNCANCEL").setCallback(BBjAPI.ON_BUTTON_PUSH,#this!,"BTNCANCEL__ON_BUTTON_PUSH")
+		rem /** DLGWIZ_CBS_END **/
+    methodend
+
+    rem /**
+    rem * Method doDataExchange:
+    rem * Set controls with program variables
+    rem * @param BBjNumber pInitFlag: Controls are initialized, if true
+    rem */
+    method protected void doDataExchange(BBjNumber pInitFlag)
+		rem /** DLGWIZ_DDX_BEGIN **/
+		rem /** DLGWIZ_DDX_END **/
+
+    methodend
+
+    rem /**
+    rem * Method doModal:
+    rem * Initialize and display dialog (contains PROCESS_EVENTS)
+    rem * @see doDataExchange(BBjNumber pInitFlag)
+    rem * @see onInitDialog()
+    rem * @see onExitDialog()
+    rem * @return BBjNumber Answer: 0=Passed required fields check, 1=Dialog canceled/closed
+    rem */
+    method public BBjNumber doModal()
+        
+        #API!.setCustomEventCallback("ReturnAnswer","do_return")
+        #API!.setCustomEventCallback("CancelAnswer","do_cancel")
+
+        #doDataExchange(#TRUE)
+        #super!.setAllValidated(#TRUE)
+
+        #onInitDialog()
+        
+        if #windowTitle! = null() then 
+            #C_Window101!.setTitle(#standartTitle!)
+        else    
+            #C_Window101!.setTitle(#windowTitle!)
+        endif
+        if !(#windowIcon! = null()) then 
+            #C_Window101!.setIcon(#windowIcon!,err=*next)
+        endif
+        
+        if !(#windowIconPath! = null()) then
+            #C_Window101!.setIcon(#windowIconPath!,err=*next)
+        endif
+         
+        #Wnd!.setVisible(#TRUE)
+
+        do_process_events:
+            process_events,err=*same
+
+        do_return:
+            #doDataExchange(#FALSE)
+            if #super!.getAllValidated()=0 then
+                #super!.setAllValidated(#TRUE)
+                goto do_process_events
+            endif
+
+        do_cancel:
+            #onExitDialog()
+            #Wnd!.destroy()
+
+        methodret #super!.getAnswer()
+    methodend
+
+    rem /**
+    rem * Method onInitDialog:
+    rem * Your custom initialization
+    rem */
+    method public void onInitDialog()
+	rem /** DLGWIZ_INI_BEGIN **/
+	    #C_Window101! = cast(BBjTopLevelWindow,#super!.getControlByName("Window101"))
+	    #C_BTNOK! = cast(BBjButton,#super!.getControlByName("BTNOK"))
+	    #C_BTNCANCEL! = cast(BBjButton,#super!.getControlByName("BTNCANCEL"))
+	rem /** DLGWIZ_INI_END **/
+        #C_Window101__HtmlView100! = #C_Window101!.addHtmlView(100,1,1,1000,575,"")
+        #C_Window101__HtmlView100!.setCallback(BBjAPI.ON_NATIVE_JAVASCRIPT,#this!,"onHTMLJavaScript")
+
+        rem uncomment the next line to center window
+        rem BBWindowUtils.centerWindow(#Wnd!)
+        #doDebugTrace(null())
+        
+        #ready=1
+        #updateMap()
+    methodend
+
+    rem /**
+    rem * Method onExitDialog:
+    rem * Your custom exit code
+    rem */
+    method public void onExitDialog()
+        ::BBUtils.bbj::BBUtils.deleteFromWebServer(#url$)
+        ::BBUtils.bbj::BBUtils.deleteFromWebServer(#pushUrl$)
+        if #traceChan then
+            call "bbtracer.bbj::stopTrace",#traceChan
+            call "bbtracer.bbj::showTrace",#traceFile$,#traceMode$
+        endif
+    methodend
+
+    rem /**
+    rem * Method postCancelAnswer:
+    rem * Set dialog answer to "canceled"
+    rem */
+    method public void postCancelAnswer()
+        #super!.setAnswer(0)
+        #API!.postCustomEvent("CancelAnswer",null())
+    methodend
+
+    rem /**
+    rem * Method postReturnAnswer:
+    rem * Set dialog answer to "normal return"
+    rem */
+    method public void postReturnAnswer()
+        #super!.setAnswer(1)
+        #API!.postCustomEvent("ReturnAnswer",null())
+    methodend
+
+    rem /**
+    rem * Method onMDIClosing:
+    rem * Handler for the MDI closing
+    rem */
+    method public void onMDIClosing(BBjMDIClosingEvent pEvent!)
+        rem uncomment the next line to veto the MDI Close
+        rem #MDI!.vetoMDIClose()
+        #MDI!.approveMDIClose()
+        #postCancelAnswer()
+    methodend
+
+    rem /**
+    rem * Method doDebugTrace:
+    rem * Show/hide console, start/stop trace
+    rem * @param BBjNamespaceEvent event! 
+    rem */
+    method public void doDebugTrace(BBjNamespaceEvent event!)
+        debug_mode = #GroupNS!.getValue("debug_mode",err=*next)>0
+        trace_mode = #GroupNS!.getValue("trace_mode",err=*next)>0
+
+        if debug_mode then
+            seterr 0
+            setesc 0
+            print(0)'show'
+        else
+            print(0)'hide'
+        endif
+
+        if trace_mode then
+            traceDir$=#traceDir$, traceMode$=#traceMode$, traceChan=#traceChan, traceFile$=#traceFile$
+            call "bbtracer.bbj::startTrace",traceDir$,traceMode$,traceChan,traceFile$
+            #traceDir$=traceDir$, #traceMode$=traceMode$, #traceChan=traceChan, #traceFile$=traceFile$
+        else
+            if #traceChan then
+                traceChan=#traceChan
+                call "bbtracer.bbj::stopTrace",traceChan
+                #traceChan=traceChan
+                call "bbtracer.bbj::showTrace",#traceFile$,#traceMode$
+            endif
+        endif
+    methodend
+    
+	rem /**
+	rem  * Method Window101__ON_CLOSE: 
+	rem  * Event handler for the ON_CLOSE event for Window101
+	rem  * @param BBjCloseEvent
+	rem  */
+	method public void Window101__ON_CLOSE(BBjCloseEvent pEvent!)
+		#postCancelAnswer()
+	methodend
+
+	rem /**
+	rem  * Method Window101__ON_RESIZE: 
+	rem  * Event handler for the ON_RESIZE event for Window101
+	rem  * @param BBjResizeEvent
+	rem  */
+	method public void Window101__ON_RESIZE(BBjResizeEvent pEvent!)
+
+	    BBjAPI().removeTimer("on_resize_timer",err=*next)
+	    BBjAPI().createTimer("on_resize_timer",.2,#this!,"doResize")
+
+	methodend
+	
+    rem /**
+    rem  * Resize Event
+    rem  */    
+    method public void doResize(BBjTimerEvent ev!)
+        w=#C_Window101!.getWidth()
+        h=#C_Window101!.getHeight()
+        #C_Window101__HtmlView100!.setSize(w,h-49)
+        #C_BTNOK!.setLocation(w-102,h-37)
+        #C_BTNCANCEL!.setLocation(w-202,h-37)
+    methodend
+	
+    rem /**
+    rem  * Sets the Location of the marker
+    rem  */    
+	method public void setLocation(Double lat!, Double lon!, BBjString label$)
+	    #Latitude! = lat!
+	    #Longitude! = lon!
+	    #Label$= label$
+	methodend
+	
+	
+    rem /**
+    rem  * Sets the center of the Map
+    rem  * @param centerlat
+    rem  * @param centerlong
+    rem  */    
+	method public void setCenter(Double centerLat!, Double centerLong!)
+	    #centerLat! = centerLat!
+	    #centerLong! = centerLong!
+    methodend
+	
+	
+    rem /**
+    rem  * Loads the Map
+    rem  */    
+	method private void updateMap()
+    	centerLatString! = "null"
+    	if #centerLat! <> null() then
+    	    centerLatString! = str(#centerLat!:"##.#################")
+    	endif 
+    	
+    	centerLongString! = "null"
+    	if #centerLong! <> null() then
+    	    centerLongString! = str(#centerLong!:"##.#################")
+    	endif
+    	
+    	latitudeString! = "null"
+    	if #Latitude! <> null() then
+    	    latitudeString! = str(#Latitude!:"##.#################")
+    	endif
+    	
+    	longitudeString! = "null"
+    	if #Longitude! <> null() then
+    	    longitudeString! = str(#Longitude!:"##.#################")
+    	endif
+    
+    	if #GoogleApiKey$>"" then	
+    	    apikey$="key="+#GoogleApiKey$+"&"
+    	fi
+    
+    	declare SimpleConstantsResolver resolver!
+    	
+    	resolver! = new SimpleConstantsResolver()
+    	resolver!.put("centerLatString",centerLatString!)
+    	resolver!.put("centerLongString",centerLongString!)
+    	resolver!.put("latitudeString",latitudeString!)
+    	resolver!.put("longitudeString",longitudeString!)
+    	resolver!.put("message",#message!)
+    	resolver!.put("apikey",apikey$)
+    	
+        #pushUrl$ = ::BBUtils.bbj::BBUtils.copyFileToWebServer("BBjGpsLocation/src/push.js","","",0)
+    	
+        ch = unt
+    	open(ch)"BBjGpsLocation/res/maps.html"
+    	     while 1
+                read record (ch,siz=1024,err=*break) line$
+                    html$ = html$ + line$
+             wend   
+    	close(ch)
+    	
+    	resolver!.put("path",#pushUrl$)
+    	html$ = resolver!.resolveConstants(html$)
+    	
+    	
+        file$=java.io.File.createTempFile("temp-file-name", ".html").getAbsolutePath()
+        open (ch,mode="O_CREATE,O_TRUNC")file$
+            write (ch)html$
+        close (ch)  
+        #url$ = ::BBUtils.bbj::BBUtils.copyFileToWebServer(file$,"","",0)
+        #C_Window101__HtmlView100!.setUrl(#url$)
+        
+        erase file$
+	methodend
+	
+    rem /**
+    rem  * Event caught when javascript is launched
+    rem  */    	
+	method public void onHTMLJavaScript ( BBjNativeJavaScriptEvent ev!)
+	    declare HashMap buffer!
+	    
+	    buffer! = ev!.getEventMap()
+	    #movedLat! = Double.valueOf(str(buffer!.get("lat")))
+	    #movedLong! = Double.valueOf(str(buffer!.get("long")))
+	    #C_BTNOK!.setEnabled(1)
+	
+	methodend
+
+	rem /**
+	rem  * Method BTNOK__ON_BUTTON_PUSH: 
+	rem  * Event handler for the ON_BUTTON_PUSH event for BTNOK
+	rem  * @param BBjButtonPushEvent
+	rem  */
+	method public void BTNOK__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
+	    #Latitude! = #movedLat!
+	    #Longitude! = #movedLong!
+		#postReturnAnswer()
+	methodend
+
+	rem /**
+	rem  * Method BTNCANCEL__ON_BUTTON_PUSH: 
+	rem  * Event handler for the ON_BUTTON_PUSH event for BTNCANCEL
+	rem  * @param BBjButtonPushEvent
+	rem  */
+	method public void BTNCANCEL__ON_BUTTON_PUSH(BBjButtonPushEvent pEvent!)
+		#postCancelAnswer()
+	methodend
+	
+	
+    rem /**
+    rem  * returns Latitude
+    rem  */
+	method public Double getLatitude()
+	    methodret #Latitude!
+	methodend
+	
+	
+    rem /**
+    rem  * returns Longtitude
+    rem  */	
+    method public Double getLongitude()
+        methodret #Longitude!
+    methodend 
+    
+    rem /**
+    rem  * Sets the Title
+    rem  * @param title
+    rem  */    
+    method public void setTitle(String title!)
+        if title! = "" then
+            title! = #standartTitle!
+        endif    
+        #windowTitle! = title!
+    methodend 
+    
+    
+    rem /**
+    rem  * Sets the Icon to given image
+    rem  * @param image
+    rem  */        
+    method public void setIcon(BBjImage image!)
+        #windowIcon! = image!
+    methodend
+    
+    
+    rem /**
+    rem  * Sets the Icon via path
+    rem  * @param path
+    rem  */    
+    method public void setIcon(String path!)
+        #windowIconPath! = path! 
+    methodend
+
+classend
+ 
