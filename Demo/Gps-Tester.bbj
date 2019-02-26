@@ -24,7 +24,7 @@ myCar!.setIcon(BBjAPI().openSysGui("X0").getImageManager().loadImageFromFile("BB
 BBjAPI().getRuntime().setDebugState(1)
 
 REM you require a Google API Key to be able to use the API
-myCar!.setGoogleApiKey("Your Api Key ")
+myCar!.setGoogleApiKey("Your Apikey ")
 
 REM start the Map Module
 myCar!.doModal()
