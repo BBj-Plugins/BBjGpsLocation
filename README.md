@@ -8,7 +8,8 @@ The location can be relocated and will be returned by the App.
 **Caution**
 
 
-The BBjGpsLocation won't work with out an Goodle Maps Apikey.
+The BBjGpsLocation won't work with out an Google Maps Apikey.
+You can set the Key in the Demo.
 
 
 
