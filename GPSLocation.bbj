@@ -4,6 +4,7 @@ use ::DialogWizard/DialogWizardRun.bbj::DialogWizardRun
 use ::bbwindowutils.bbj::BBWindowUtils
 use com.basiscomponents.db.constants.SimpleConstantsResolver
 use java.util.HashMap
+use ::BBUtils.bbj::BBUtils
 
 
 class public GPSLocation extends BBDialog
@@ -95,7 +96,6 @@ class public GPSLocation extends BBDialog
     methodend
     
     rem /**
-    rem * Method initToolBar:
     rem * Setup toolbar
     rem */
     method protected void initToolBar()
@@ -109,7 +109,6 @@ class public GPSLocation extends BBDialog
     
 
     rem /**
-    rem * Method setCallbacks:
     rem * Set control callbacks
     rem */
     method protected void setCallbacks()
@@ -125,7 +124,6 @@ class public GPSLocation extends BBDialog
     methodend
 
     rem /**
-    rem * Method doDataExchange:
     rem * Set controls with program variables
     rem * @param BBjNumber pInitFlag: Controls are initialized, if true
     rem */
@@ -136,7 +134,6 @@ class public GPSLocation extends BBDialog
     methodend
 
     rem /**
-    rem * Method doModal:
     rem * Initialize and display dialog (contains PROCESS_EVENTS)
     rem * @see doDataExchange(BBjNumber pInitFlag)
     rem * @see onInitDialog()
@@ -186,7 +183,6 @@ class public GPSLocation extends BBDialog
     methodend
 
     rem /**
-    rem * Method onInitDialog:
     rem * Your custom initialization
     rem */
     method public void onInitDialog()
@@ -207,12 +203,14 @@ class public GPSLocation extends BBDialog
     methodend
 
     rem /**
-    rem * Method onExitDialog:
     rem * Your custom exit code
     rem */
     method public void onExitDialog()
-        ::BBUtils.bbj::BBUtils.deleteFromWebServer(#url$)
-        ::BBUtils.bbj::BBUtils.deleteFromWebServer(#pushUrl$)
+        declare BBUtils utils!
+        
+        utils! = new BBUtils()
+        utils!.deleteFromWebServer(#url$)
+        utils!.deleteFromWebServer(#pushUrl$)
         if #traceChan then
             call "bbtracer.bbj::stopTrace",#traceChan
             call "bbtracer.bbj::showTrace",#traceFile$,#traceMode$
@@ -220,7 +218,6 @@ class public GPSLocation extends BBDialog
     methodend
 
     rem /**
-    rem * Method postCancelAnswer:
     rem * Set dialog answer to "canceled"
     rem */
     method public void postCancelAnswer()
@@ -229,7 +226,6 @@ class public GPSLocation extends BBDialog
     methodend
 
     rem /**
-    rem * Method postReturnAnswer:
     rem * Set dialog answer to "normal return"
     rem */
     method public void postReturnAnswer()
@@ -238,7 +234,6 @@ class public GPSLocation extends BBDialog
     methodend
 
     rem /**
-    rem * Method onMDIClosing:
     rem * Handler for the MDI closing
     rem */
     method public void onMDIClosing(BBjMDIClosingEvent pEvent!)
@@ -249,7 +244,6 @@ class public GPSLocation extends BBDialog
     methodend
 
     rem /**
-    rem * Method doDebugTrace:
     rem * Show/hide console, start/stop trace
     rem * @param BBjNamespaceEvent event! 
     rem */
@@ -280,7 +274,6 @@ class public GPSLocation extends BBDialog
     methodend
     
 	rem /**
-	rem  * Method Window101__ON_CLOSE: 
 	rem  * Event handler for the ON_CLOSE event for Window101
 	rem  * @param BBjCloseEvent
 	rem  */
@@ -289,7 +282,6 @@ class public GPSLocation extends BBDialog
 	methodend
 
 	rem /**
-	rem  * Method Window101__ON_RESIZE: 
 	rem  * Event handler for the ON_RESIZE event for Window101
 	rem  * @param BBjResizeEvent
 	rem  */
@@ -408,7 +400,6 @@ class public GPSLocation extends BBDialog
 	methodend
 
 	rem /**
-	rem  * Method BTNOK__ON_BUTTON_PUSH: 
 	rem  * Event handler for the ON_BUTTON_PUSH event for BTNOK
 	rem  * @param BBjButtonPushEvent
 	rem  */
@@ -419,7 +410,6 @@ class public GPSLocation extends BBDialog
 	methodend
 
 	rem /**
-	rem  * Method BTNCANCEL__ON_BUTTON_PUSH: 
 	rem  * Event handler for the ON_BUTTON_PUSH event for BTNCANCEL
 	rem  * @param BBjButtonPushEvent
 	rem  */

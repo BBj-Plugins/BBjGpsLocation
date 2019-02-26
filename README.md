@@ -23,3 +23,6 @@ The GPS-Locator can be modified at the following:
 A sample GpsLocator
 
 ![BBjGpsLocationDemoImage](https://raw.githubusercontent.com/BBj-Plugins/BBjGpsLocation/master/docs/screenshots/GpsLocationDemoImage.jpg)
+
+
+For more information check out the [javadoc](https://bbj-plugins.github.io/BBjGpsLocation/javadoc/)
