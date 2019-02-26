@@ -3,7 +3,8 @@ A Plugin that can display given GPS-Positions in a separate window.
 
 
 The location can be relocated and will be returned by the App.
-You need an Google Maps Apikey to make the App work.
+### Caution
+- Will not work with out an Goodle Maps Apikey. 
 
 
 
