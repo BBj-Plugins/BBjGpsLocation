@@ -56,7 +56,7 @@
                marker.setMap(map);
               }
            }else{
-           alert("Could not find any Geodata to load a map with!");
+           alert("Could not find Geodata.");
        }
      
      if ( typeof(marker)  !== 'undefined') {
@@ -70,22 +70,20 @@
 
      
      google.maps.event.addListener(map, 'click', function(event) {
-         var confirmation = confirm("Update location?");
-         if (confirmation == true){
-            Push.create("Position updated");
+            Push.create("updated.");
            if ( typeof(marker)  !== 'undefined'){
                marker.setMap(null);
                }
-               marker = new google.maps.Marker({position: event.latLng});
-               marker.setMap(map);
-               window.basisDispatchCustomEvent("geodata",{"lat":marker.getPosition().lat(),"long":marker.getPosition().lng()});
-               var carInfo = new google.maps.InfoWindow({
-                    content:"New Position"
-                   });
-               carInfo.open(map,marker);
-            }else{
-               return;
-           }
+              marker = new google.maps.Marker({position: event.latLng});
+              marker.setMap(map);
+              window.basisDispatchCustomEvent("geodata",{"lat":marker.getPosition().lat(),"long":marker.getPosition().lng()});
+              /**
+              var carInfo = new google.maps.InfoWindow({
+                   content:"New Position"
+                  });
+             **/
+             carInfo.open(map,marker);
+            
      });
    }
 </script>

@@ -8,13 +8,13 @@ REM get a Gps instance
 myCar! = new GPSLocation()
 
 REM Set your location and a Car thats placed
-myCar!.setLocation(49.247534,6.860939,"Ferrari Mondial SB-PW 98")
+myCar!.setLocation(49.247534,6.860939,"your car is parked here")
 
 REM Set the Center of the Map
 myCar!.setCenter(49.247534,6.860939)
 
 REM Set the Title of the GPS window
-myCar!.setTitle("Location of: Ferrari Mondial SB-PW 98")
+myCar!.setTitle("Location of your car")
 
 REM Set the Message when clicking on the Cursor
 myCar!.setMessage("Here is your car currently at")
@@ -24,7 +24,7 @@ myCar!.setIcon(BBjAPI().openSysGui("X0").getImageManager().loadImageFromFile("BB
 BBjAPI().getRuntime().setDebugState(1)
 
 REM you require a Google API Key to be able to use the API
-myCar!.setGoogleApiKey("Your Apikey ")
+rem myCar!.setGoogleApiKey("Your Apikey ")
 
 REM start the Map Module
 myCar!.doModal()
