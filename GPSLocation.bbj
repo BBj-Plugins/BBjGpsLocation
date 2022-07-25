@@ -3,9 +3,10 @@ use ::DialogWizard/DialogUtils.bbj::DialogUtils
 use ::DialogWizard/DialogWizardRun.bbj::DialogWizardRun
 use ::bbwindowutils.bbj::BBWindowUtils
 use com.basiscomponents.db.constants.SimpleConstantsResolver
-use java.util.HashMap
 use ::BBUtils.bbj::BBUtils
 
+use java.io.File
+use java.util.HashMap
 
 class public GPSLocation extends BBDialog
 
@@ -376,7 +377,10 @@ class public GPSLocation extends BBDialog
     	html$ = resolver!.resolveConstants(html$)
     	
     	
-        file$=java.io.File.createTempFile("temp-file-name", ".html").getAbsolutePath()
+        file!=java.io.File.createTempFile("temp-file-name", ".html", new File(System.getProperty("java.io.tmpdir")))
+        file$ = file!.getAbsolutePath()
+        file!.delete()
+
         open (ch,mode="O_CREATE,O_TRUNC")file$
             write (ch)html$
         close (ch)  
@@ -396,7 +400,6 @@ class public GPSLocation extends BBDialog
 	    #movedLat! = Double.valueOf(str(buffer!.get("lat")))
 	    #movedLong! = Double.valueOf(str(buffer!.get("long")))
 	    #C_BTNOK!.setEnabled(1)
-	
 	methodend
 
 	rem /**

@@ -1,0 +1,155 @@
+use ::BBjWidget/BBjWidget.bbj::BBjWidget
+
+use com.basiscomponents.db.constants.SimpleConstantsResolver
+
+use java.io.File
+use java.util.HashMap
+
+class public GpsWidget extends BBjWidget
+    field public BBjString GoogleApiKey$
+    
+    field private Double lat!
+    field private Double long!
+    field private Double movedLat!
+    field private Double movedLong!
+    field private Double centerLat!
+    field private Double centerLong!
+    field private BBjString label!
+    field public BBjString message! = ""
+    
+    field private BBjImage windowIcon!
+    field private String windowIconPath!
+    field private static String standartTitle! = "GPS-CarLocator"
+    field private BBjString pushUrl!
+    field private BBjString url!
+
+    field private BBjChildWindow window!
+    field private BBjHtmlView htmlView! 
+
+    method public GpsWidget(BBjWindow wnd!)
+        #super!.create(wnd!, wnd!.getAvailableControlID())
+    methodend
+
+    method public void redraw(Boolean init!)
+        if !init! then methodret
+
+        #window! = #getCanvas()
+        #htmlView! = #window!.addHtmlView(#window!.getAvailableControlID(),0,0,0,0,"")
+        #htmlView!.setCallback(BBjAPI.ON_NATIVE_JAVASCRIPT,#this!,"onHTMLJavaScript")
+    methodend
+
+    method public void loadMap()
+        declare SimpleConstantsResolver resolver!
+    
+    	centerLatString! = "null"
+    	if #centerLat! <> null() then
+    	    centerLatString! = str(#centerLat!:"##.#################")
+    	endif 
+    	
+    	centerLongString! = "null"
+    	if #centerLong! <> null() then
+    	    centerLongString! = str(#centerLong!:"##.#################")
+    	endif
+    	
+    	latitudeString! = "null"
+    	if #lat! <> null() then
+    	    latitudeString! = str(#lat!:"##.#################")
+    	endif
+    	
+    	longitudeString! = "null"
+    	if #long! <> null() then
+    	    longitudeString! = str(#long!:"##.#################")
+    	endif
+    
+    	if #GoogleApiKey$>"" then	
+    	    apikey$="key="+#GoogleApiKey$+"&"
+    	fi
+
+        resolver! = new SimpleConstantsResolver()
+    	resolver!.put("centerLatString",centerLatString!)
+    	resolver!.put("centerLongString",centerLongString!)
+    	resolver!.put("latitudeString",latitudeString!)
+    	resolver!.put("longitudeString",longitudeString!)
+    	resolver!.put("message",#message!)
+    	resolver!.put("apikey",apikey$)
+    	
+        #pushUrl! = ::BBUtils.bbj::BBUtils.copyFileToWebServer("BBjGpsLocation/src/push.js","","",0)
+    	
+        ch = unt
+    	open(ch)"BBjGpsLocation/res/maps.html"
+    	     while 1
+                read record (ch,siz=1024,err=*break) line$
+                    html$ = html$ + line$
+             wend   
+    	close(ch)
+    	
+    	resolver!.put("path",#pushUrl!)
+    	html$ = resolver!.resolveConstants(html$)
+    	
+    	
+        file!=java.io.File.createTempFile("temp-file-name", ".html", new File(System.getProperty("java.io.tmpdir")))
+        file$ = file!.getAbsolutePath()
+        file!.delete()
+
+        open (ch,mode="O_CREATE,O_TRUNC")file$
+            write (ch)html$
+        close (ch)  
+        #url! = ::BBUtils.bbj::BBUtils.copyFileToWebServer(file$,"","",0)
+        #htmlView!.setUrl(#url!)
+        #htmlView!.setStyle("width","100%")
+        #htmlView!.setStyle("height","100%")
+        
+        erase file$
+	methodend
+
+    method public void onHTMLJavaScript(BBjNativeJavaScriptEvent ev!)
+        declare HashMap buffer!
+        
+        buffer! = ev!.getEventMap()
+        #movedLat! = Double.valueOf(str(buffer!.get("lat")))
+        #movedLong! = Double.valueOf(str(buffer!.get("long")))
+        rem #C_BTNOK!.setEnabled(1)
+    methodend
+
+    method public void setLocation(Double lat!, Double long!, Boolean center!)
+        #lat! = lat!
+        #long! = long!
+        if center! then
+            #centerLat! = lat!
+            #centerLong! = long!
+        endif
+    methodend
+
+    method public void setCenter(Double lat!, Double long!)
+        #centerLat! = lat!
+        #centerLong! = long!
+    methodend
+
+    method public void setLabel(String label!)
+        #label! = label!
+    methodend 
+
+    method public void setMessage(String message!)
+        #message! = message!
+    methodend
+
+    method public void setIcon(BBjImage image!)
+        #windowIcon! = image!
+    methodend
+
+    method public void setIcon(String path!)
+        #windowIconPath! = path! 
+    methodend
+
+	method public Double getLatitude()
+	    methodret #lat!
+	methodend
+	
+    method public Double getLongitude()
+        methodret #long!
+    methodend 
+
+    method public BBjChildWindow getCanvas()
+        methodret #super!.getCanvas()
+    methodend
+classend

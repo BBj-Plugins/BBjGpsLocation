@@ -1,30 +1,87 @@
 use ::BBjGpsLocation/GPSLocation.bbj::GPSLocation
+use ::BBjGpsLocation/GpsWidget.bbj::GpsWidget
+
+use java.io.File
 
 print 'HIDE'
 
-declare GPSLocation myCar!
+System.setProperty("java.io.tmpdir", "/private/tmp/")
 
-REM get a Gps instance
-myCar! = new GPSLocation()
+appServer! = bbjapi().getAdmin("admin","admin123").getWebAppServer()
 
-REM Set your location and a Car thats placed
-myCar!.setLocation(49.247534,6.860939,"your car is parked here")
+appConfig! = appServer!.makeEmptyAppConfig()
+appname$ = pgm(-1)
+appConfig!.setProgramName(appname$)
+appname$ = appname$(1,pos("."=appname$,1,pos("."=appname$,1,0))-1)
+while pos("/"=appname$)>0
+    path$=path$+appname$(1,pos("/"=appname$)-1)+"/"
+    appname$=appname$(pos("/"=appname$)+1)
+wend
+while pos("\"=appname$)>0
+    path$=path$+appname$(1,pos("\"=appname$)-1)+"/"
+    appname$=appname$(pos("\"=appname$)+1)
+wend
+appConfig!.setWorkingDirectory(DSK("") + DIR(""))
+appConfig!.setConfigFile(BBjAPI().getConfig().getCurrentCommandLineObject().getConfigFile())
+appConfig!.setDwcEnabled(1)
+appConfig!.setBuiEnabled(0)
+appConfig!.setDisallowConsole(false)
+app! = appConfig!.buildApplication(appname$)
+published = appServer!.isPublished(app!)
+if (published) then
+    appServer!.unpublish(appname$)
+fi
+appServer!.publish(app!)
+BBjAPI().getThinClient().browse("http://localhost:8888/webapp/"+appname$)
 
-REM Set the Center of the Map
-myCar!.setCenter(49.247534,6.860939)
+declare BBjAPI api!
+declare BBjSysGui sysgui!
+declare BBjTopLevelWindow wnd!
 
-REM Set the Title of the GPS window
-myCar!.setTitle("Location of your car")
+api! = BBjAPI()
+sysgui! = api!.openSysGui("X0")
 
-REM Set the Message when clicking on the Cursor
-myCar!.setMessage("Here is your car currently at")
+wnd! = sysgui!.addWindow(sysgui!.getAvailableContext(),0,0,800,650,"",$01101083$)
 
-REM set the Icon of the Window
-myCar!.setIcon(BBjAPI().openSysGui("X0").getImageManager().loadImageFromFile("BBjGpsLocation/src/CarIcon.png"))
-BBjAPI().getRuntime().setDebugState(1)
+declare BBjChildWindow wrapper! 
 
-REM you require a Google API Key to be able to use the API
-rem myCar!.setGoogleApiKey("Your Apikey ")
 
-REM start the Map Module
-myCar!.doModal()
+declare GpsWidget gps!
+
+gps! = new GpsWidget(wnd!)
+gps!.getCanvas().setStyle("width","100vw")
+gps!.getCanvas().setStyle("height","100vh")
+gps!.setLocation(49.247534,6.860939,1)
+gps!.setGoogleApiKey("AIzaSyB8aK657VAt5X7qfFwo-d8OTSbREciTJbE")
+gps!.setMessage("My Message")
+gps!.setCenter(49.247534,6.860939)
+gps!.loadMap()
+
+process_events
+
+rem declare GPSLocation myCar!
+
+rem REM get a Gps instance
+rem myCar! = new GPSLocation()
+
+rem REM Set your location and a Car thats placed
+rem myCar!.setLocation(49.247534,6.860939,"your car is parked here")
+
+rem REM Set the Center of the Map
+rem myCar!.setCenter(49.247534,6.860939)
+
+rem REM Set the Title of the GPS window
+rem myCar!.setTitle("Location of your car")
+
+rem REM Set the Message when clicking on the Cursor
+rem myCar!.setMessage("Here is your car currently at")
+
+rem REM set the Icon of the Window
+rem myCar!.setIcon(BBjAPI().openSysGui("X0").getImageManager().loadImageFromFile("BBjGpsLocation/src/CarIcon.png"))
+rem BBjAPI().getRuntime().setDebugState(1)
+
+rem REM you require a Google API Key to be able to use the API
+rem myCar!.setGoogleApiKey("AIzaSyB8aK657VAt5X7qfFwo-d8OTSbREciTJbE")
+
+rem REM start the Map Module
+rem myCar!.doModal()
