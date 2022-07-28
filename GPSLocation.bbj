@@ -3,9 +3,10 @@ use ::DialogWizard/DialogUtils.bbj::DialogUtils
 use ::DialogWizard/DialogWizardRun.bbj::DialogWizardRun
 use ::bbwindowutils.bbj::BBWindowUtils
 use com.basiscomponents.db.constants.SimpleConstantsResolver
-use java.util.HashMap
 use ::BBUtils.bbj::BBUtils
 
+use java.io.File
+use java.util.HashMap
 
 class public GPSLocation extends BBDialog
 
@@ -90,24 +91,14 @@ class public GPSLocation extends BBDialog
 
 
         if #Wnd!<>null() then
-            #initToolBar()
             #setCallbacks()
         endif
     methodend
-    
-    rem /**
-    rem * Setup toolbar
-    rem */
-    method protected void initToolBar()
-        
-    methodend
-    
     
     method public void setMessage(String message!)
         #message! = message!
     methodend
     
-
     rem /**
     rem * Set control callbacks
     rem */
@@ -123,19 +114,9 @@ class public GPSLocation extends BBDialog
 		rem /** DLGWIZ_CBS_END **/
     methodend
 
-    rem /**
-    rem * Set controls with program variables
-    rem * @param BBjNumber pInitFlag: Controls are initialized, if true
-    rem */
-    method protected void doDataExchange(BBjNumber pInitFlag)
-		rem /** DLGWIZ_DDX_BEGIN **/
-		rem /** DLGWIZ_DDX_END **/
-
-    methodend
 
     rem /**
     rem * Initialize and display dialog (contains PROCESS_EVENTS)
-    rem * @see doDataExchange(BBjNumber pInitFlag)
     rem * @see onInitDialog()
     rem * @see onExitDialog()
     rem * @return BBjNumber Answer: 0=Passed required fields check, 1=Dialog canceled/closed
@@ -145,7 +126,6 @@ class public GPSLocation extends BBDialog
         #API!.setCustomEventCallback("ReturnAnswer","do_return")
         #API!.setCustomEventCallback("CancelAnswer","do_cancel")
 
-        #doDataExchange(#TRUE)
         #super!.setAllValidated(#TRUE)
 
         #onInitDialog()
@@ -169,7 +149,6 @@ class public GPSLocation extends BBDialog
             process_events,err=*same
 
         do_return:
-            #doDataExchange(#FALSE)
             if #super!.getAllValidated()=0 then
                 #super!.setAllValidated(#TRUE)
                 goto do_process_events
@@ -306,12 +285,10 @@ class public GPSLocation extends BBDialog
     rem /**
     rem  * Sets the Location of the marker
     rem  */    
-	method public void setLocation(Double lat!, Double lon!, BBjString label$)
+	method public void setLocation(Double lat!, Double lon!)
 	    #Latitude! = lat!
 	    #Longitude! = lon!
-	    #Label$= label$
 	methodend
-	
 	
     rem /**
     rem  * Sets the center of the Map
@@ -323,20 +300,21 @@ class public GPSLocation extends BBDialog
 	    #centerLong! = centerLong!
     methodend
 	
-	
     rem /**
     rem  * Loads the Map
     rem  */    
 	method private void updateMap()
     	centerLatString! = "null"
-    	if #centerLat! <> null() then
-    	    centerLatString! = str(#centerLat!:"##.#################")
+    	if #centerLat! = null() then
+            #centerLat! = #Latitude!
     	endif 
+        centerLatString! = str(#centerLat!:"##.#################")
     	
     	centerLongString! = "null"
-    	if #centerLong! <> null() then
-    	    centerLongString! = str(#centerLong!:"##.#################")
-    	endif
+    	if #centerLong! = null() then
+    	    #centerLong! = #Longitude!
+        endif
+        centerLongString! = str(#centerLong!:"##.#################")
     	
     	latitudeString! = "null"
     	if #Latitude! <> null() then
@@ -375,8 +353,10 @@ class public GPSLocation extends BBDialog
     	resolver!.put("path",#pushUrl$)
     	html$ = resolver!.resolveConstants(html$)
     	
-    	
-        file$=java.io.File.createTempFile("temp-file-name", ".html").getAbsolutePath()
+        file!=java.io.File.createTempFile("temp-file-name", ".html", new File(System.getProperty("java.io.tmpdir")))
+        file$ = file!.getAbsolutePath()
+        file!.delete()
+
         open (ch,mode="O_CREATE,O_TRUNC")file$
             write (ch)html$
         close (ch)  
@@ -396,7 +376,6 @@ class public GPSLocation extends BBDialog
 	    #movedLat! = Double.valueOf(str(buffer!.get("lat")))
 	    #movedLong! = Double.valueOf(str(buffer!.get("long")))
 	    #C_BTNOK!.setEnabled(1)
-	
 	methodend
 
 	rem /**

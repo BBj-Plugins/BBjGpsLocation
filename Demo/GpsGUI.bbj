@@ -1,0 +1,34 @@
+use ::BBjGpsLocation/GPSLocation.bbj::GPSLocation
+
+use java.io.File
+
+print 'HIDE'
+
+
+declare GPSLocation myCar!
+
+REM get a Gps instance
+myCar! = new GPSLocation()
+
+REM Set your location and a Car thats placed
+myCar!.setLocation(49.247534,6.860939)
+
+REM Set the Center of the Map
+rem only needed if the center should differ from the Location
+rem myCar!.setCenter(49.247534,6.860939)
+
+REM Set the Title of the GPS window
+myCar!.setTitle("Location of your car")
+
+REM Set the Message when clicking on the Cursor
+myCar!.setMessage("Here is your car currently at")
+
+REM set the Icon of the Window
+myCar!.setIcon(BBjAPI().openSysGui("X0").getImageManager().loadImageFromFile("BBjGpsLocation/src/CarIcon.png"))
+BBjAPI().getRuntime().setDebugState(1)
+
+REM you require a Google API Key to be able to use the API
+myCar!.setGoogleApiKey(stbl("GOOGLEAPIKEY"))
+
+REM start the Map Module
+myCar!.doModal()

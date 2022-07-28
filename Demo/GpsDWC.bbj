@@ -1,0 +1,74 @@
+use ::BBjGpsLocation/GPSLocation.bbj::GPSLocation
+use ::BBjGpsLocation/GpsWidget.bbj::GpsWidget
+
+use java.io.File
+
+print 'HIDE'
+
+rem System.setProperty("java.io.tmpdir", "/private/tmp/")
+
+if info(3,6) <> "6" then 
+
+    appServer! = bbjapi().getAdmin("admin","admin123").getWebAppServer()
+
+    appConfig! = appServer!.makeEmptyAppConfig()
+    appname$ = pgm(-1)
+    appConfig!.setProgramName(appname$)
+    appname$ = appname$(1,pos("."=appname$,1,pos("."=appname$,1,0))-1)
+    while pos("/"=appname$)>0
+        path$=path$+appname$(1,pos("/"=appname$)-1)+"/"
+        appname$=appname$(pos("/"=appname$)+1)
+    wend
+    while pos("\"=appname$)>0
+        path$=path$+appname$(1,pos("\"=appname$)-1)+"/"
+        appname$=appname$(pos("\"=appname$)+1)
+    wend
+    appConfig!.setWorkingDirectory(DSK("") + DIR(""))
+    appConfig!.setConfigFile(BBjAPI().getConfig().getCurrentCommandLineObject().getConfigFile())
+    appConfig!.setDwcEnabled(1)
+    appConfig!.setBuiEnabled(0)
+    appConfig!.setDisallowConsole(false)
+    app! = appConfig!.buildApplication(appname$)
+    published = appServer!.isPublished(app!)
+    if (published) then
+        appServer!.unpublish(appname$)
+    fi
+    appServer!.publish(app!)
+    BBjAPI().getThinClient().browse("http://localhost:8888/webapp/"+appname$)
+    release
+endif
+
+declare BBjAPI api!
+declare BBjSysGui sysgui!
+declare BBjTopLevelWindow wnd!
+
+api! = BBjAPI()
+sysgui! = api!.openSysGui("X0")
+
+wnd! = sysgui!.addWindow(sysgui!.getAvailableContext(),0,0,800,650,"",$01101083$)
+declare GpsWidget gps!
+
+gps! = new GpsWidget(wnd!)
+gps!.getCanvas().setStyle("width","100vw")
+gps!.getCanvas().setStyle("height","calc(100vh - 100px)")
+gps!.setLocation(49.247534,6.860939)
+gps!.setGoogleApiKey(stbl("GOOGLEAPIKEY",err=noKeyError))
+gps!.setMessage("My Message")
+rem only needed if the center should differ from the Location
+rem gps!.setCenter(49.247534,6.860939)
+gps!.loadMap()
+
+btn! = wnd!.addButton(sysgui!.getAvailableContext(),0,0,800,650,"Cleanup")
+btn!.setCallback(BBjAPI.ON_BUTTON_PUSH,"cleanup")
+
+process_events
+cleanup:
+
+gps!.cleanUp()
+
+return
+
+noKeyError:
+    a = msgbox("No API Key found")
+    gps!.cleanUp()
+    release
