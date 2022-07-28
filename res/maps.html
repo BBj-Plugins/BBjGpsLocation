@@ -76,13 +76,19 @@
                }
               marker = new google.maps.Marker({position: event.latLng});
               marker.setMap(map);
-              window.basisDispatchCustomEvent("geodata",{"lat":marker.getPosition().lat(),"long":marker.getPosition().lng()});
-              /**
-              var carInfo = new google.maps.InfoWindow({
-                   content:"New Position"
-                  });
-             **/
-             carInfo.open(map,marker);
+              const isGui = parent.document.isSameNode(document)
+              const doc = isGui ? document : parent.document
+              const htmlView = doc.querySelector("[gpsid='1421515']");
+      
+              isGui ? window.basisDispatchCustomEvent("geodata",{"lat":marker.getPosition().lat(),"long":marker.getPosition().lng()}) :
+              htmlView.basisDispatchCustomEvent(htmlView,{"lat":marker.getPosition().lat(),"long":marker.getPosition().lng()});
+            //   {detail:{message:'hello',time:new Date(),},bubbles:true,cancelable:true}
+              
+            //   var carInfo = new google.maps.InfoWindow({
+            //        content:"New Position"
+            //       });
+           
+            //  carInfo.open(map,marker);
             
      });
    }
