@@ -8,11 +8,12 @@ The location can be relocated and will be returned by the App.
 **Caution**
 
 
-The BBjGpsLocation won't work with out an Google Maps Apikey.
+The BBjGpsLocation won't work without an Google Maps Apikey.
 
-
-You can set the Key in the Demo.
-
+You can set the Key in the Demo, or add the following entry to your config.bbx
+```
+SET GOOGLEAPIKEY=AIzaS.............
+```
 
 
 # Contents
