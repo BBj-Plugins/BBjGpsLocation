@@ -40,22 +40,22 @@ class public GpsWidget extends BBjWidget
     	if #centerLat! = null() then
             #centerLat! = #lat!
     	endif 
-        centerLatString! = str(#centerLat!:"##.#################")
+        centerLatString! = str(#centerLat!:"-##.#################")
     	
     	centerLongString! = "null"
     	if #centerLong! = null() then
             #centerLong! = #long!
     	endif
-        centerLongString! = str(#centerLong!:"##.#################")
+        centerLongString! = str(#centerLong!:"-##.#################")
     	
     	latitudeString! = "null"
     	if #lat! <> null() then
-    	    latitudeString! = str(#lat!:"##.#################")
+    	    latitudeString! = str(#lat!:"-##.#################")
     	endif
     	
     	longitudeString! = "null"
     	if #long! <> null() then
-    	    longitudeString! = str(#long!:"##.#################")
+    	    longitudeString! = str(#long!:"-##.#################")
     	endif
     
     	if #GoogleApiKey$>"" then	

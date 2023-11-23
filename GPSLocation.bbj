@@ -308,22 +308,22 @@ class public GPSLocation extends BBDialog
     	if #centerLat! = null() then
             #centerLat! = #Latitude!
     	endif 
-        centerLatString! = str(#centerLat!:"##.#################")
+        centerLatString! = str(#centerLat!:"-##.#################")
     	
     	centerLongString! = "null"
     	if #centerLong! = null() then
     	    #centerLong! = #Longitude!
         endif
-        centerLongString! = str(#centerLong!:"##.#################")
+        centerLongString! = str(#centerLong!:"-##.#################")
     	
     	latitudeString! = "null"
     	if #Latitude! <> null() then
-    	    latitudeString! = str(#Latitude!:"##.#################")
+    	    latitudeString! = str(#Latitude!:"-##.#################")
     	endif
     	
     	longitudeString! = "null"
     	if #Longitude! <> null() then
-    	    longitudeString! = str(#Longitude!:"##.#################")
+    	    longitudeString! = str(#Longitude!:"-##.#################")
     	endif
     
     	if #GoogleApiKey$>"" then	
