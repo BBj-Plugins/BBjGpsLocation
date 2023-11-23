@@ -51,7 +51,7 @@ declare GpsWidget gps!
 gps! = new GpsWidget(wnd!)
 gps!.getCanvas().setStyle("width","100vw")
 gps!.getCanvas().setStyle("height","calc(100vh - 100px)")
-gps!.setLocation(49.247534,6.860939)
+gps!.setLocation(-33.43703906478786, -70.65028647578781)
 gps!.setGoogleApiKey(stbl("GOOGLEAPIKEY",err=noKeyError))
 gps!.setMessage("My Message")
 rem only needed if the center should differ from the Location

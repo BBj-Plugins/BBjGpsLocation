@@ -32,3 +32,5 @@ myCar!.setGoogleApiKey(stbl("GOOGLEAPIKEY"))
 
 REM start the Map Module
 myCar!.doModal()
+
+release
